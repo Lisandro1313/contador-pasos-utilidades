@@ -201,6 +201,18 @@ export default function PasosScreen() {
               <Text style={styles.btnCambiarMetaText}>🎯  Cambiar meta diaria: {meta.toLocaleString()} pasos  ›</Text>
             </TouchableOpacity>
 
+            {/* Banner Plan Plus */}
+            <View style={styles.plusBanner}>
+              <View style={styles.plusBannerLeft}>
+                <Text style={styles.plusBannerEmoji}>🌿</Text>
+                <View>
+                  <Text style={styles.plusBannerTitulo}>Plan Plus · $2.99/mes</Text>
+                  <Text style={styles.plusBannerDesc}>Recetas saludables y consejos anti-ansiedad cada día</Text>
+                </View>
+              </View>
+              <Text style={styles.plusBannerFlecha}>›</Text>
+            </View>
+
             {/* Banner publicitario */}
             <BannerPublicidad />
           </>
@@ -394,4 +406,17 @@ const styles = StyleSheet.create({
   modalBtns: { flexDirection: 'row', gap: 12 },
   modalBtnCancelar: { flex: 1, backgroundColor: BG, borderRadius: 12, padding: 14, alignItems: 'center' },
   modalBtnGuardar: { flex: 1, backgroundColor: VERDE, borderRadius: 12, padding: 14, alignItems: 'center' },
+
+  plusBanner: {
+    marginHorizontal: 16, marginBottom: 12,
+    backgroundColor: '#0d2a1a', borderRadius: 14,
+    borderWidth: 1, borderColor: VERDE + '55',
+    padding: 14, flexDirection: 'row',
+    justifyContent: 'space-between', alignItems: 'center',
+  },
+  plusBannerLeft:  { flexDirection: 'row', alignItems: 'center', flex: 1, gap: 12 },
+  plusBannerEmoji: { fontSize: 28 },
+  plusBannerTitulo:{ fontSize: 13, fontWeight: '800', color: VERDE },
+  plusBannerDesc:  { fontSize: 11, color: VERDE + '99', marginTop: 2 },
+  plusBannerFlecha:{ fontSize: 22, color: VERDE, fontWeight: '700' },
 });
