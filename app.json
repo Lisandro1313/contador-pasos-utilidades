@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Contador de Pasos",
+    "name": "SoySaludable+",
     "slug": "contador-pasos",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -10,26 +10,43 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0d1117"
+      "backgroundColor": "#0a1628"
     },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.lisandro1313.contadorpasos",
       "infoPlist": {
-        "NSMotionUsageDescription": "Necesitamos el sensor de movimiento para contar tus pasos."
+        "NSMotionUsageDescription": "SoySaludable+ necesita el sensor de movimiento para contar tus pasos.",
+        "NSUserNotificationsUsageDescription": "Te enviamos recordatorios para que alcances tu meta diaria de pasos."
       }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#0d1117"
+        "backgroundColor": "#0a1628"
       },
       "package": "com.lisandro1313.contadorpasos",
-      "permissions": ["ACTIVITY_RECOGNITION", "BODY_SENSORS"],
+      "permissions": [
+        "ACTIVITY_RECOGNITION",
+        "BODY_SENSORS",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "POST_NOTIFICATIONS"
+      ],
       "edgeToEdgeEnabled": true
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#00C853",
+          "defaultChannel": "pasos"
+        }
+      ]
+    ]
   }
 }
