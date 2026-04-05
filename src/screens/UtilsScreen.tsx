@@ -89,7 +89,7 @@ export default function UtilsScreen() {
         <View style={styles.bateriaRow}>
           <View style={styles.bateriaIcono}>
             <View style={[styles.bateriaRelleno, {
-              width: `${bateria ?? 0}%` as any,
+              width: `${bateria ?? 0}%` as `${number}%`,
               backgroundColor: colorBateria,
             }]} />
           </View>

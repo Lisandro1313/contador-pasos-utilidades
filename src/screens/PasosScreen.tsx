@@ -143,7 +143,7 @@ export default function PasosScreen() {
                   </View>
                   <View style={styles.historialBarraContainer}>
                     <View style={[styles.historialBarra, {
-                      width: `${pct}%` as any,
+                      width: `${pct}%` as `${number}%`,
                       backgroundColor: dia.metaCumplida ? '#3fb950' : '#58a6ff',
                     }]} />
                   </View>
