@@ -1,5 +1,19 @@
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Purchases, { LOG_LEVEL } from 'react-native-purchases';
+import { Platform } from 'react-native';
+
+// ── IDs de producto — deben coincidir con lo que crees en Google Play Console ──
+export const PRODUCT_ID_MENSUAL = 'soysaludable_plus_mensual';
+export const PRODUCT_ID_ANUAL   = 'soysaludable_plus_anual';
+const REVENUECAT_ANDROID_KEY    = 'REVENUECAT_ANDROID_API_KEY'; // reemplazá con tu key real
+
+export function configurarRevenueCat() {
+  if (Platform.OS === 'android') {
+    Purchases.setLogLevel(LOG_LEVEL.ERROR);
+    Purchases.configure({ apiKey: REVENUECAT_ANDROID_KEY });
+  }
+}
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 export interface Receta {
@@ -428,32 +442,81 @@ function getDiaDelAnio(): number {
 }
 
 export function usePlus() {
-  const [esPremium, setEsPremium] = useState(false);
-  const [cargando, setCargando] = useState(true);
+  const [esPremium, setEsPremium]     = useState(false);
+  const [cargando, setCargando]       = useState(true);
+  const [comprando, setComprando]     = useState(false);
+  const [errorCompra, setErrorCompra] = useState<string | null>(null);
 
+  // Verificar suscripción activa al iniciar
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY).then(val => {
-      setEsPremium(val === 'true');
-      setCargando(false);
-    });
+    const verificar = async () => {
+      try {
+        const info = await Purchases.getCustomerInfo();
+        const activa = typeof info.entitlements.active['plus'] !== 'undefined';
+        setEsPremium(activa);
+        await AsyncStorage.setItem(STORAGE_KEY, activa ? 'true' : 'false');
+      } catch {
+        // Sin conexión: usar cache local
+        const cache = await AsyncStorage.getItem(STORAGE_KEY);
+        setEsPremium(cache === 'true');
+      } finally {
+        setCargando(false);
+      }
+    };
+    verificar();
   }, []);
 
-  const activarPlus = async () => {
-    await AsyncStorage.setItem(STORAGE_KEY, 'true');
-    setEsPremium(true);
+  // Compra real via Google Play
+  const activarPlus = async (productId: string = PRODUCT_ID_MENSUAL) => {
+    setComprando(true);
+    setErrorCompra(null);
+    try {
+      const offerings = await Purchases.getOfferings();
+      const paquetes  = offerings.current?.availablePackages ?? [];
+      const paquete   = paquetes.find(p => p.product.identifier === productId)
+                        ?? paquetes[0];
+      if (!paquete) throw new Error('Producto no disponible');
+
+      const { customerInfo } = await Purchases.purchasePackage(paquete);
+      const activa = typeof customerInfo.entitlements.active['plus'] !== 'undefined';
+      setEsPremium(activa);
+      await AsyncStorage.setItem(STORAGE_KEY, 'true');
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Error al procesar el pago';
+      // El usuario canceló — no es un error real
+      if (!msg.includes('userCancelled')) setErrorCompra(msg);
+    } finally {
+      setComprando(false);
+    }
   };
 
+  // Restaurar compras anteriores
+  const restaurarCompras = async () => {
+    setComprando(true);
+    try {
+      const info  = await Purchases.restorePurchases();
+      const activa = typeof info.entitlements.active['plus'] !== 'undefined';
+      setEsPremium(activa);
+      await AsyncStorage.setItem(STORAGE_KEY, activa ? 'true' : 'false');
+    } finally {
+      setComprando(false);
+    }
+  };
+
+  // Cancelar — Google Play gestiona la baja real, acá solo limpiamos local
   const cancelarPlus = async () => {
     await AsyncStorage.removeItem(STORAGE_KEY);
     setEsPremium(false);
   };
 
   const dia = getDiaDelAnio();
-  const recetaHoy: Receta = RECETAS[dia % RECETAS.length];
+  const recetaHoy: Receta   = RECETAS[dia % RECETAS.length];
   const consejoHoy: Consejo = CONSEJOS[dia % CONSEJOS.length];
-
-  // Consejo extra (desplazado +7 para variedad)
   const consejoBono: Consejo = CONSEJOS[(dia + 7) % CONSEJOS.length];
 
-  return { esPremium, cargando, activarPlus, cancelarPlus, recetaHoy, consejoHoy, consejoBono };
+  return {
+    esPremium, cargando, comprando, errorCompra,
+    activarPlus, cancelarPlus, restaurarCompras,
+    recetaHoy, consejoHoy, consejoBono,
+  };
 }

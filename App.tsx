@@ -5,6 +5,10 @@ import { StatusBar } from 'expo-status-bar';
 import PasosScreen from './src/screens/PasosScreen';
 import UtilsScreen from './src/screens/UtilsScreen';
 import PlusScreen from './src/screens/PlusScreen';
+import { configurarRevenueCat } from './src/hooks/usePlus';
+
+// Inicializar RevenueCat al arrancar la app
+configurarRevenueCat();
 
 const Tab = createBottomTabNavigator();
 

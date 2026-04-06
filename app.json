@@ -46,7 +46,13 @@
           "color": "#00C853",
           "defaultChannel": "pasos"
         }
-      ]
-    ]
+      ],
+      "react-native-purchases"
+    ],
+    "extra": {
+      "revenuecat": {
+        "androidApiKey": "REVENUECAT_ANDROID_API_KEY"
+      }
+    }
   }
 }

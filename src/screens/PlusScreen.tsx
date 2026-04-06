@@ -47,14 +47,14 @@ function DifiBadge({ dif }: { dif: string }) {
 }
 
 // ── Paywall ───────────────────────────────────────────────────────────────────
-function Paywall({ onComprar }: { onComprar: () => void }) {
-  const [modalVisible, setModalVisible] = useState(false);
-
-  const confirmar = () => {
-    setModalVisible(false);
-    onComprar();
-  };
-
+function Paywall({
+  onComprar, onRestaurar, comprando, errorCompra,
+}: {
+  onComprar: () => void;
+  onRestaurar: () => void;
+  comprando: boolean;
+  errorCompra: string | null;
+}) {
   return (
     <ScrollView contentContainerStyle={styles.paywallContainer}>
       {/* Hero */}
@@ -93,35 +93,32 @@ function Paywall({ onComprar }: { onComprar: () => void }) {
         ))}
       </View>
 
-      {/* CTA */}
-      <TouchableOpacity style={styles.btnComprar} onPress={() => setModalVisible(true)}>
-        <Text style={styles.btnComprarTexto}>🌿 Activar Plan Plus</Text>
-      </TouchableOpacity>
-      <Text style={styles.paywallFooter}>
-        Pago seguro · Cancela en cualquier momento · Sin cargos ocultos
-      </Text>
-
-      {/* Modal confirmación */}
-      <Modal visible={modalVisible} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalEmoji}>🌿</Text>
-            <Text style={styles.modalTitulo}>Activar Plan Plus</Text>
-            <Text style={styles.modalTexto}>
-              Vas a activar SoySaludable+ Plus por $2.99/mes.{'\n'}
-              Podés cancelar cuando quieras.
-            </Text>
-            <View style={styles.modalBotones}>
-              <TouchableOpacity style={styles.modalBtnCancelar} onPress={() => setModalVisible(false)}>
-                <Text style={styles.modalBtnCancelarTxt}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.modalBtnConfirmar} onPress={confirmar}>
-                <Text style={styles.modalBtnConfirmarTxt}>Confirmar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+      {/* Error */}
+      {errorCompra && (
+        <View style={styles.errorBox}>
+          <Text style={styles.errorTexto}>⚠️ {errorCompra}</Text>
         </View>
-      </Modal>
+      )}
+
+      {/* CTA */}
+      <TouchableOpacity
+        style={[styles.btnComprar, comprando && { opacity: 0.6 }]}
+        onPress={onComprar}
+        disabled={comprando}
+      >
+        {comprando
+          ? <ActivityIndicator color="#000" />
+          : <Text style={styles.btnComprarTexto}>🌿 Activar Plan Plus — $2.99/mes</Text>
+        }
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.btnRestaurar} onPress={onRestaurar} disabled={comprando}>
+        <Text style={styles.btnRestaurarTxt}>Restaurar compra anterior</Text>
+      </TouchableOpacity>
+
+      <Text style={styles.paywallFooter}>
+        Pago seguro vía Google Play · Cancela cuando quieras · Sin cargos ocultos
+      </Text>
     </ScrollView>
   );
 }
@@ -316,7 +313,7 @@ function ContenidoPlus() {
 
 // ── Pantalla principal ────────────────────────────────────────────────────────
 export default function PlusScreen() {
-  const { esPremium, cargando, activarPlus } = usePlus();
+  const { esPremium, cargando, activarPlus, restaurarCompras, comprando, errorCompra } = usePlus();
 
   if (cargando) {
     return (
@@ -328,7 +325,15 @@ export default function PlusScreen() {
 
   return (
     <View style={styles.container}>
-      {esPremium ? <ContenidoPlus /> : <Paywall onComprar={activarPlus} />}
+      {esPremium
+        ? <ContenidoPlus />
+        : <Paywall
+            onComprar={activarPlus}
+            onRestaurar={restaurarCompras}
+            comprando={comprando}
+            errorCompra={errorCompra}
+          />
+      }
     </View>
   );
 }
@@ -500,4 +505,17 @@ const styles = StyleSheet.create({
   modalBtnCancelarTxt:   { color: SUBTEXT, fontWeight: '600' },
   modalBtnConfirmar:     { flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: VERDE, alignItems: 'center' },
   modalBtnConfirmarTxt:  { color: '#000', fontWeight: '800' },
+
+  // Error y restaurar
+  errorBox: {
+    marginHorizontal: 20, marginBottom: 12,
+    backgroundColor: '#c6282822', borderRadius: 10,
+    borderWidth: 1, borderColor: '#c6282866', padding: 12,
+  },
+  errorTexto: { fontSize: 13, color: '#ef9a9a', textAlign: 'center' },
+  btnRestaurar: {
+    marginHorizontal: 20, marginBottom: 16,
+    paddingVertical: 12, alignItems: 'center',
+  },
+  btnRestaurarTxt: { fontSize: 13, color: SUBTEXT, textDecorationLine: 'underline' },
 });
