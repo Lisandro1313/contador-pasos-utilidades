@@ -51,7 +51,11 @@
     "extra": {
       "revenuecat": {
         "androidApiKey": "REVENUECAT_ANDROID_API_KEY"
+      },
+      "eas": {
+        "projectId": "aa08834c-3946-4865-8487-27535ed4738c"
       }
-    }
+    },
+    "owner": "boxsurprise"
   }
 }
